@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "dvr.h"
-
+#define INFINITY 9999
 // The distance table for node 1
 struct distance_table dt1;
 
@@ -10,24 +10,30 @@ struct distance_table dt1;
  * any data on node 1. You may not need to do anything with this function.
  */
 void rtinit1() {
+  // initializing all to INFINITY
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      dt1.costs[i][j] = INFINITY;
+    }
+  }
+  
   // Initializing costs
-  dt1.costs[1][0] = 1;
+  dt1.costs[0][0] = 1;
   dt1.costs[1][1] = 0;
-  dt1.costs[1][2] = 1;
-  dt1.costs[1][3] = INFINITY;
+  dt1.costs[2][2] = 1;
+
+  printdt(1, &dt1);
 
   // Sending costs to other nodes
   struct rtpkt packet0;
-  packet0.sourceid = 1;
-  packet0.destid = 0;
-  memcpy(packet0.mincost, dt1.costs[1], 4);
+  creatertpkt(&packet0, 1, 0, dt1.costs[0]);
   tolayer2(packet0);
-
+  printf("At time t=%lf, node 1 sends packet to node 0 with: 1 0 1 9999.\n", get_time());
+  
   struct rtpkt packet2;
-  packet2.sourceid = 1;
-  packet2.destid = 2;
-  memcpy(packet2.mincost, dt1.costs[1], 4);
+  creatertpkt(&packet2, 0, 2, dt1.costs[2]);
   tolayer2(packet2);
+  printf("At time t=%lf, node 1 sends packet to node 2 with: 1 0 1 9999.\n", get_time());
 }
 
 /**
@@ -36,17 +42,21 @@ void rtinit1() {
  * \param packet  A pointer to the packet data that was received.
  */
 void rtupdate1(struct rtpkt* packet) {
+  printf("At time t=%lf, rtupdate1() called. node %d receives a packet from node %d\n", get_time(), packet->destid, packet->sourceid);
+  
   int* tempArr = packet->mincost;
-
-  if (tempArr[1] < dt1.costs[1][packet->sourceid]) { 
-    dt1.costs[1][packet->sourceid] = tempArr[1];
+  int id = packet->destid;
+  
+  if (tempArr[1] < dt1.costs[id][id]) { 
+    dt1.costs[id][id] = tempArr[1];
   }
 
   for (int i = 1; i < 4; i++) {
-    if (tempArr[1] + tempArr[1] < dt1.costs[1][i]) {
-      dt1.costs[1][i] = tempArr[i] + tempArr[1];
+    if (tempArr[i] + tempArr[1] < dt1.costs[id][i]) {
+      dt1.costs[id][i] = tempArr[i] + tempArr[1];
     }
   }
+  printdt(1, &dt1);
 }
 
 /**

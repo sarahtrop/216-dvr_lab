@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "dvr.h"
+#define INFINITY 9999
 
 // The distance table for node 0
 struct distance_table dt0;
@@ -10,30 +11,36 @@ struct distance_table dt0;
  * any data on node 0. You may not need to do anything with this function.
  */
 void rtinit0() {
-  // Initializing costs
-  dt0.costs[0][0] = 0;
-  dt0.costs[0][1] = 1;
-  dt0.costs[0][2] = 3;
-  dt0.costs[0][3] = 7;
+  // initializing all to INFINITY
+  for (int i = 1; i < 4; i++) {
+    for (int j = 1; j < 4; j++) {
+      dt0.costs[i][j] = INFINITY;
+    }
+  }
+  
+  // Initializing costs we know
+  dt0.costs[1][1] = 1;
+  dt0.costs[2][2] = 3;
+  dt0.costs[3][3] = 7;
+  
+  printdt(0, &dt0);
 
   // Sending costs to other nodes
   struct rtpkt packet1;
-  packet1.sourceid = 0;
-  packet1.destid = 1;
-  memcpy(packet1.mincost, dt0.costs[0], 4);
+  creatertpkt(&packet1, 0, 1, dt0.costs[1]);
   tolayer2(packet1);
+  printf("At time t=%lf, node 0 sends packet to node 1 with: 0 1 3 7.\n", get_time());
 
   struct rtpkt packet2;
-  packet2.sourceid = 0;
-  packet2.destid = 2;
-  memcpy(packet2.mincost, dt0.costs[0], 4);
+  creatertpkt(&packet2, 0, 2, dt0.costs[2]);
   tolayer2(packet2);
+  printf("At time t=%lf, node 0 sends packet to node 2 with: 0 1 3 7.\n", get_time());
 
   struct rtpkt packet3;
-  packet3.sourceid = 0;
-  packet3.destid = 3;
-  memcpy(packet3.mincost, dt0.costs[0], 4);
+  creatertpkt(&packet3, 0, 3, dt0.costs[3]);
   tolayer2(packet3);
+  printf("At time t=%lf, node 0 sends packet to node 3 with: 0 1 3 7.\n", get_time());
+  
 }
 
 /**
@@ -42,17 +49,21 @@ void rtinit0() {
  * \param packet  A pointer to the packet data that was received.
  */
 void rtupdate0(struct rtpkt* packet) {
+  printf("At time t=%lf, rtupdate0() called. node %d receives a packet from node %d\n", get_time(), packet->destid, packet->sourceid);
+  
   int* tempArr = packet->mincost;
-
-  if (tempArr[0] < dt0.costs[0][packet->sourceid]) { 
-    dt0.costs[0][packet->sourceid] = tempArr[0];
+  int id = packet->destid;
+  
+  if (tempArr[0] < dt0.costs[id][id]) { 
+    dt0.costs[id][id] = tempArr[0];
   }
 
   for (int i = 1; i < 4; i++) {
-    if (tempArr[i] + tempArr[0] < dt0.costs[0][i]) {
-      dt0.costs[0][i] = tempArr[i] + tempArr[0];
+    if (tempArr[i] + tempArr[0] < dt0.costs[id][i]) {
+      dt0.costs[id][i] = tempArr[i] + tempArr[0];
     }
   }
+  printdt(0, &dt0);
 }
 
 /**

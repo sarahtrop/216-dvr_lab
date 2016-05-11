@@ -6,8 +6,6 @@
 // advanced assignment.
 #define LINKCHANGES 0
 
-#define INFINITY 9999
-
 // A distance table used within each node
 struct distance_table {
   int costs[4][4];
@@ -41,5 +39,8 @@ void printdt(int from, struct distance_table* dt);
  * \returns A floating point representation of the current time
  */
 float get_time();
+
+void creatertpkt(struct rtpkt *initrtpkt, int srcid, int destid,
+                 int *mincosts);
 
 #endif
