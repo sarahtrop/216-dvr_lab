@@ -1,6 +1,7 @@
 #ifndef __DVR_H__
 #define __DVR_H__
 
+#include <string.h>
 // Change this definition to 1 if you want to enable link changes for the
 // advanced assignment.
 #define LINKCHANGES 0

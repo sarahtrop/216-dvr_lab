@@ -20,13 +20,13 @@ void rtinit1() {
   struct rtpkt packet0;
   packet0.sourceid = 1;
   packet0.destid = 0;
-  packet0.mincost = dt1.costs[1];
+  memcpy(packet0.mincost, dt1.costs[1], 4);
   tolayer2(packet0);
 
   struct rtpkt packet2;
   packet2.sourceid = 1;
   packet2.destid = 2;
-  packet2.mincost = dt1.costs[1];
+  memcpy(packet2.mincost, dt1.costs[1], 4);
   tolayer2(packet2);
 }
 
@@ -36,7 +36,17 @@ void rtinit1() {
  * \param packet  A pointer to the packet data that was received.
  */
 void rtupdate1(struct rtpkt* packet) {
-  
+  int* tempArr = packet->mincost;
+
+  if (tempArr[1] < dt1.costs[1][packet->sourceid]) { 
+    dt1.costs[1][packet->sourceid] = tempArr[1];
+  }
+
+  for (int i = 1; i < 4; i++) {
+    if (tempArr[1] + tempArr[1] < dt1.costs[1][i]) {
+      dt1.costs[1][i] = tempArr[i] + tempArr[1];
+    }
+  }
 }
 
 /**
