@@ -61,7 +61,7 @@ void rtupdate0(struct rtpkt* packet) {
       }
     }
   }
-  /*
+  
   // Sending costs to other nodes
   struct rtpkt packet1;
   creatertpkt(&packet1, 0, 1, dt0.costs[1]);
@@ -77,7 +77,7 @@ void rtupdate0(struct rtpkt* packet) {
   creatertpkt(&packet3, 0, 3, dt0.costs[3]);
   tolayer2(packet3);
   printf("At time t=%lf, node 0 sends packet to node 3 with: %d %d %d %d.\n", get_time(), dt0.costs[3][0], dt0.costs[3][1], dt0.costs[3][2], dt0.costs[3][3]);
-  */
+  
   printdt(0, &dt0);
 }
 

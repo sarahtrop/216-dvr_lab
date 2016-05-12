@@ -2,6 +2,7 @@
 
 #include "dvr.h"
 #define INFINITY 9999
+
 // The distance table for node 1
 struct distance_table dt1;
 
@@ -48,12 +49,13 @@ void rtupdate1(struct rtpkt* packet) {
 
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
-      if (sum < dt2.costs[id][i]) {
-        dt2.costs[id][i] = sum;
+      int sum = dt1.costs[id][j] + packet->mincost[j];
+      if (sum < dt1.costs[id][i]) {
+        dt1.costs[id][i] = sum;
       }
     }
   }
-
+  /*
   // Sending costs to other nodes
   struct rtpkt packet0;
   creatertpkt(&packet0, 1, 0, dt1.costs[0]);
@@ -64,7 +66,7 @@ void rtupdate1(struct rtpkt* packet) {
   creatertpkt(&packet2, 1, 2, dt1.costs[2]);
   tolayer2(packet2);
   printf("At time t=%lf, node 1 sends packet to node 2 with: %d %d %d %d.\n", get_time(), dt1.costs[2][0], dt1.costs[2][1], dt1.costs[2][2], dt1.costs[2][3]);
-
+  */
   printdt(1, &dt1);
 }
 
