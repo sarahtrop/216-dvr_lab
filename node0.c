@@ -50,19 +50,33 @@ void rtinit0() {
  */
 void rtupdate0(struct rtpkt* packet) {
   printf("At time t=%lf, rtupdate0() called. node %d receives a packet from node %d\n", get_time(), packet->destid, packet->sourceid);
-  
-  int* tempArr = packet->mincost;
+ 
   int id = packet->destid;
-  
-  if (tempArr[0] < dt0.costs[id][id]) { 
-    dt0.costs[id][id] = tempArr[0];
-  }
 
-  for (int i = 1; i < 4; i++) {
-    if (tempArr[i] + tempArr[0] < dt0.costs[id][i]) {
-      dt0.costs[id][i] = tempArr[i] + tempArr[0];
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      if (sum < dt0.costs[id][i]) {
+        dt0.costs[id][i] = sum;
+      }
     }
   }
+
+  // Sending costs to other nodes
+  struct rtpkt packet1;
+  creatertpkt(&packet1, 0, 1, dt0.costs[1]);
+  tolayer2(packet1);
+  printf("At time t=%lf, node 0 sends packet to node 1 with: %d %d %d %d.\n", get_time(), dt0.costs[1][0], dt0.costs[1][1], dt0.costs[1][2], dt0.costs[1][3]);
+
+  struct rtpkt packet2;
+  creatertpkt(&packet2, 0, 2, dt0.costs[2]);
+  tolayer2(packet2);
+  printf("At time t=%lf, node 0 sends packet to node 2 with: %d %d %d %d.\n", get_time(), dt0.costs[2][0], dt0.costs[2][1], dt0.costs[2][2], dt0.costs[2][3]);
+
+  struct rtpkt packet3;
+  creatertpkt(&packet3, 0, 3, dt0.costs[3]);
+  tolayer2(packet3);
+  printf("At time t=%lf, node 0 sends packet to node 3 with: %d %d %d %d.\n", get_time(), dt0.costs[3][0], dt0.costs[3][1], dt0.costs[3][2], dt0.costs[3][3]);
+
   printdt(0, &dt0);
 }
 
