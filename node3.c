@@ -2,24 +2,29 @@
 #define INFINITY 9999
 #include "dvr.h"
 
+// Help from Reilly on rtupdate()
+
 // The distance table for node 3
 struct distance_table dt3;
+
+int link_costs3[] = {7, INFINITY, 2, 0};
 
 /**
  * Called by the simulation during start-up. Use this function to initialize
  * any data on node 3. You may not need to do anything with this function.
  */
 void rtinit3() {
-  // initializing all to INFINITY
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      dt3.costs[i][j] = INFINITY;
+  // initializing
+  for (int i = 1; i < 4; i++) {
+    for (int j = 1; j < 4; j++) {
+      if (i == j || i == 3) {
+        dt3.costs[i][j] = link_costs3[i];
+      }
+      else {
+        dt3.costs[i][j] = INFINITY;
+      }
     }
   }
-  
-   // Initializing costs
-  dt3.costs[0][0] = 7;
-  dt3.costs[2][2] = 2;
   
   printdt(3, &dt3);
   
@@ -27,12 +32,12 @@ void rtinit3() {
   struct rtpkt packet2;
   creatertpkt(&packet2, 3, 2, dt3.costs[2]);
   tolayer2(packet2);
-  printf("At time t=%lf, node 3 sends packet to node 2 with: 7 9999 2 0.\n", get_time());
+  printf("At time t=%lf, node 3 sends packet to node 2 with: %d %d %d %d.\n", get_time(), dt3.costs[0][0], dt3.costs[1][1], dt3.costs[2][2], dt3.costs[3][3]);
 
   struct rtpkt packet0;
   creatertpkt(&packet0, 3, 0, dt3.costs[0]);
   tolayer2(packet0);
-  printf("At time t=%lf, node 3 sends packet to node 0 with: 7 9999 2 0.\n", get_time());
+ printf("At time t=%lf, node 3 sends packet to node 1 with: %d %d %d %d.\n", get_time(), dt3.costs[0][0], dt3.costs[1][1], dt3.costs[2][2], dt3.costs[3][3]);
 }
 
 /**
@@ -42,14 +47,22 @@ void rtinit3() {
  */
 void rtupdate3(struct rtpkt* packet) {
   printf("At time t=%lf, rtupdate3() called. node %d receives a packet from node %d\n", get_time(), packet->destid, packet->sourceid);
- 
-  int id = packet->destid;
 
+  int updated = 0;
+
+    printf("received: %d %d %d %d\n", packet->mincost[0], packet->mincost[1], packet->mincost[2], packet->mincost[3]);
+  
   for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      int sum = dt3.costs[id][j] + packet->mincost[j];
-      if (sum < dt3.costs[id][i]) {
-        dt3.costs[id][i] = sum;
+    int sum = link_costs3[packet->sourceid] + packet->mincost[i];
+    if (sum < dt3.costs[i][packet->sourceid]) {
+      dt3.costs[i][packet->sourceid] = sum;
+      updated = 1;
+    }
+  }
+
+  if(updated == 1) {
+    for (int i = 0; i < 3; i++) {
+      if (i != 1) {
         struct rtpkt packet0;
         creatertpkt(&packet0, 3, i, dt3.costs[i]);
         tolayer2(packet0);
@@ -57,5 +70,7 @@ void rtupdate3(struct rtpkt* packet) {
       }
     }
   }
+  
+  
   printdt(3, &dt3);
 }
