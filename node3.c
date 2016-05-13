@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #define INFINITY 9999
 #include "dvr.h"
 
@@ -15,8 +16,8 @@ int link_costs3[] = {7, INFINITY, 2, 0};
  */
 void rtinit3() {
   // initializing
-  for (int i = 1; i < 4; i++) {
-    for (int j = 1; j < 4; j++) {
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
       if (i == j || i == 3) {
         dt3.costs[i][j] = link_costs3[i];
       }
@@ -27,17 +28,15 @@ void rtinit3() {
   }
   
   printdt(3, &dt3);
-  
-  // Sending costs to other nodes
-  struct rtpkt packet2;
-  creatertpkt(&packet2, 3, 2, dt3.costs[2]);
-  tolayer2(packet2);
-  printf("At time t=%lf, node 3 sends packet to node 2 with: %d %d %d %d.\n", get_time(), dt3.costs[0][0], dt3.costs[1][1], dt3.costs[2][2], dt3.costs[3][3]);
 
-  struct rtpkt packet0;
-  creatertpkt(&packet0, 3, 0, dt3.costs[0]);
-  tolayer2(packet0);
- printf("At time t=%lf, node 3 sends packet to node 1 with: %d %d %d %d.\n", get_time(), dt3.costs[0][0], dt3.costs[1][1], dt3.costs[2][2], dt3.costs[3][3]);
+ for (int i = 0; i < 3; i++) {
+      if (i != 1) {
+        struct rtpkt packet0;
+        creatertpkt(&packet0, 3, i, link_costs3);
+        tolayer2(packet0);
+        printf("At time t=%lf, node 3 sends packet to node %d with: %d %d %d %d.\n", get_time(), i, link_costs3[0], link_costs3[1], link_costs3[2], link_costs3[3]);
+      }
+    }
 }
 
 /**
@@ -49,8 +48,6 @@ void rtupdate3(struct rtpkt* packet) {
   printf("At time t=%lf, rtupdate3() called. node %d receives a packet from node %d\n", get_time(), packet->destid, packet->sourceid);
 
   int updated = 0;
-
-    printf("received: %d %d %d %d\n", packet->mincost[0], packet->mincost[1], packet->mincost[2], packet->mincost[3]);
   
   for (int i = 0; i < 4; i++) {
     int sum = link_costs3[packet->sourceid] + packet->mincost[i];
@@ -60,13 +57,19 @@ void rtupdate3(struct rtpkt* packet) {
     }
   }
 
+  int send_arr[4] = {0, 0, 0, 0};
+  for (int i = 0; i < 4; i++) {
+    send_arr[i] = dt3.costs[i][packet->sourceid];
+  }
+
+
   if(updated == 1) {
     for (int i = 0; i < 3; i++) {
       if (i != 1) {
         struct rtpkt packet0;
-        creatertpkt(&packet0, 3, i, dt3.costs[i]);
+        creatertpkt(&packet0, 3, i, send_arr);
         tolayer2(packet0);
-        printf("At time t=%lf, node 3 sends packet to node %d with: %d %d %d %d.\n", get_time(), i, dt3.costs[i][0], dt3.costs[i][1], dt3.costs[i][2], dt3.costs[i][3]);
+        printf("At time t=%lf, node 3 sends packet to node %d with: %d %d %d %d.\n", get_time(), i, send_arr[0], send_arr[1], send_arr[2], send_arr[3]);
       }
     }
   }

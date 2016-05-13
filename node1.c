@@ -14,8 +14,8 @@ int link_costs1[] = {1, 0, 1, INFINITY};
  */
 void rtinit1() {
   // initializing
-  for (int i = 1; i < 4; i++) {
-    for (int j = 1; j < 4; j++) {
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
       if (i == j || i == 3) {
         dt1.costs[i][j] = link_costs1[i];
       }
@@ -27,16 +27,14 @@ void rtinit1() {
   printdt(1, &dt1);
 
   // Sending costs to other nodes
-  struct rtpkt packet0;
-  creatertpkt(&packet0, 1, 0, dt1.costs[0]);
-  tolayer2(packet0);
-  printf("At time t=%lf, node 1 sends packet to node 0 with: %d %d %d %d.\n", get_time(), dt1.costs[0][0], dt1.costs[1][1], dt1.costs[2][2], dt1.costs[3][3]);
-  
-  struct rtpkt packet2;
-  creatertpkt(&packet2, 1, 2, dt1.costs[2]);
-  tolayer2(packet2);
-  printf("At time t=%lf, node 1 sends packet to node 2 with: %d %d %d %d.\n", get_time(), dt1.costs[0][0], dt1.costs[1][1], dt1.costs[2][2], dt1.costs[3][3]);
-
+    for (int i = 0; i < 3; i++) {
+      if (i != 1) {
+        struct rtpkt packet0;
+        creatertpkt(&packet0, 0, i, link_costs1);
+        tolayer2(packet0);
+        printf("At time t=%lf, node 1 sends packet to node %d with: %d %d %d %d.\n", get_time(), i, link_costs1[0], link_costs1[1], link_costs1[2], link_costs1[3]);
+      }
+    }
 }
 
 /**
@@ -58,13 +56,18 @@ void rtupdate1(struct rtpkt* packet) {
     }
   }
 
+  int send_arr[4] = {0, 0, 0, 0};
+  for (int i = 0; i < 4; i++) {
+    send_arr[i] = dt1.costs[i][packet->sourceid];
+  }
+  
   if(updated == 1) {
     for (int i = 0; i < 3; i++) {
       if (i != 1) {
         struct rtpkt packet0;
-        creatertpkt(&packet0, 0, i, dt1.costs[i]);
+        creatertpkt(&packet0, 0, i, send_arr);
         tolayer2(packet0);
-        printf("At time t=%lf, node 1 sends packet to node %d with: %d %d %d %d.\n", get_time(), i, dt1.costs[i][0], dt1.costs[i][1], dt1.costs[i][2], dt1.costs[i][3]);
+        printf("At time t=%lf, node 1 sends packet to node %d with: %d %d %d %d.\n", get_time(), i, send_arr[0], send_arr[1], send_arr[2], send_arr[3]);
       }
     }
   }

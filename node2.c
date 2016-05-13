@@ -13,8 +13,8 @@ int link_costs2[] = {3, 1, 0, 2};
  */
 void rtinit2() {
   // initializing
-  for (int i = 1; i < 4; i++) {
-    for (int j = 1; j < 4; j++) {
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
       if (i == j || i == 3) {
         dt2.costs[i][j] = link_costs2[i];
       }
@@ -27,20 +27,14 @@ void rtinit2() {
   printdt(2, &dt2);
 
   // Sending costs to other nodes
-  struct rtpkt packet0;
-  creatertpkt(&packet0, 2, 0, dt2.costs[0]);
-  tolayer2(packet0);
-  printf("At time t=%lf, node 2 sends packet to node 0 with: %d %d %d %d.\n", get_time(), dt2.costs[0][0], dt2.costs[1][1], dt2.costs[2][2], dt2.costs[3][3]);
-  
-  struct rtpkt packet1;
-  creatertpkt(&packet1, 2, 1, dt2.costs[1]);
-  tolayer2(packet1);
-  printf("At time t=%lf, node 2 sends packet to node 1 with: %d %d %d %d.\n", get_time(), dt2.costs[0][0], dt2.costs[1][1], dt2.costs[2][2], dt2.costs[3][3]);
-
-  struct rtpkt packet3;
-  creatertpkt(&packet3, 2, 3, dt2.costs[3]);
-  tolayer2(packet3);
-    printf("At time t=%lf, node 2 sends packet to node 3 with: %d %d %d %d.\n", get_time(), dt2.costs[0][0], dt2.costs[1][1], dt2.costs[2][2], dt2.costs[3][3]);
+  for (int i = 0; i < 4; i++) {
+    if (i != 2) {
+      struct rtpkt packet0;
+      creatertpkt(&packet0, 2, i, link_costs2);
+      tolayer2(packet0);
+      printf("At time t=%lf, node 2 sends packet to node %d with: %d %d %d %d.\n", get_time(), i, link_costs2[0], link_costs2[1], link_costs2[2], link_costs2[3]);
+    }
+  }
 }
 
 /**
@@ -62,13 +56,18 @@ void rtupdate2(struct rtpkt* packet) {
     }
   }
 
+  int send_arr[4] = {0, 0, 0, 0};
+  for (int i = 0; i < 4; i++) {
+    send_arr[i] = dt2.costs[i][packet->sourceid];
+  }
+  
   if(updated == 1) {
     for (int i = 0; i < 4; i++) {
       if (i != 2) {
         struct rtpkt packet0;
-        creatertpkt(&packet0, 2, i, dt2.costs[i]);
+        creatertpkt(&packet0, 2, i, send_arr);
         tolayer2(packet0);
-        printf("At time t=%lf, node 2 sends packet to node %d with: %d %d %d %d.\n", get_time(), i, dt2.costs[i][0], dt2.costs[i][1], dt2.costs[i][2], dt2.costs[i][3]);
+        printf("At time t=%lf, node 2 sends packet to node %d with: %d %d %d %d.\n", get_time(), i, send_arr[0], send_arr[1], send_arr[2], send_arr[3]);
       }
     }
   }
